@@ -1,0 +1,2 @@
+#!/bin/sh
+@GJS_PATH@ -I @pkgdatadir@ $@
