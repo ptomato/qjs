@@ -245,3 +245,16 @@ function q(value) {
     printerr(file + ':' + line + ': ' + _prettyPrint(value));
     return value;
 }
+
+// Load all the module's API as properties onto the q() function and set that
+// that as the Q module object.
+q.trace = trace;
+q.time = time;
+q.breakBefore = breakBefore;
+Object.defineProperty(q, 'DEBUG', {
+    get: function () { return DEBUG; },
+    set: function (value) { DEBUG = value; },
+    enumerable: true,
+    configurable: true,
+});
+imports.q = q;
