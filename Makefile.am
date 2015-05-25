@@ -26,6 +26,10 @@ dist_pkgdata_DATA = \
 
 EXTRA_DIST += test/smoke/example.js
 
+# Documentation
+
+EXTRA_DIST += README.md
+
 # Git ignore files
 
 MAINTAINERCLEANFILES = $(GITIGNORE_MAINTAINERCLEANFILES_TOPLEVEL)
