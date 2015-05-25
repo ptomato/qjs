@@ -4,6 +4,26 @@ const System = imports.system;
 
 let _breakpoints = 0;
 
+// Return an array of stack frames (strings as printed by GJS) corresponding to
+// the point where _getCurrentStack() was called
+function _getCurrentStack() {
+    let e = new Error();
+    let stack = e.stack.split('\n');
+    stack.pop();  // remove last newline
+    stack.shift();  // remove _getCurrentStack's own frame
+    return stack;
+}
+
+// Return [function name, file name, line number] for a stack frame (i.e. a
+// string as printed by GJS, as returned from _getCurrentStack())
+function _interpretStackFrame(frame) {
+    let [location, fileLine] = frame.split('@');
+    let [file, line] = fileLine.split(':');
+    if (location === '')
+        location = 'anonymous function';
+    return [location, file, line];
+}
+
 // This is how trace(), time(), etc. are actually implemented, since they are
 // pretty much all the same except for the decorator
 function _decorate(name, decorator, args) {
@@ -208,4 +228,20 @@ function time() {
  */
 function breakBefore(ident, scope) {
     return _decorate('breakBefore', _breakBeforeDecorator, arguments);
+}
+
+/**
+ * q:
+ * @value: Value to pretty-print.
+ *
+ * Prints out @value on the terminal.
+ *
+ * Returns: @value
+ */
+function q(value) {
+    if (!DEBUG)
+        return value;
+    let [func, file, line] = _interpretStackFrame(_getCurrentStack()[1]);
+    printerr(file + ':' + line + ': ' + _prettyPrint(value));
+    return value;
 }

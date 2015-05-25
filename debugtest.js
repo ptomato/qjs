@@ -17,7 +17,7 @@ const MyClass = new Lang.Class({
     myRecursiveMethod: function (foo) {
         if (foo < 1)
             return 1;
-        return foo * this.myRecursiveMethod(foo - 1);
+        return foo * this.myRecursiveMethod(Q.q(foo - 1));
     },
 });
 
