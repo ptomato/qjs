@@ -250,7 +250,7 @@ function time() {
  *
  * Returns: the decorator function
  */
-function breakBefore(ident, scope) {
+function breakBefore() {
     return _decorate('breakBefore', _breakBeforeDecorator, arguments);
 }
 
