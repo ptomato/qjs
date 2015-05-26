@@ -102,7 +102,7 @@ function _isDecoratedWithTag(func, tag) {
 }
 
 function _prettyPrint(obj) {
-    let retval = obj.toString();
+    let retval = JSON.stringify(obj);
     if (retval.length > 15)
         retval = retval.substr(0, 12) + '...';
     if (obj.length !== undefined)
