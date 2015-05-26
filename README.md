@@ -15,6 +15,13 @@ const Q = imports.q;
 Launch your program with `qjs` instead of `gjs` to make sure you
 have the right search path for modules.
 
+All output goes to `/tmp/q`, which you can watch with this shell
+command:
+```sh
+tail -f /tmp/q
+```
+If `$TMPDIR` is set, the output goes to `$TMPDIR/q`.
+
 ### q() ###
 
 To print the value of `foo`:

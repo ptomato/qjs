@@ -1,8 +1,26 @@
+const Gio = imports.gi.Gio;
 const GLib = imports.gi.GLib;
 const Lang = imports.lang;
 const System = imports.system;
 
 let _breakpoints = 0;
+
+let _tmpdir = GLib.getenv('TMPDIR') || GLib.getenv('TEMP') || '/tmp';
+let _outputFile = Gio.File.new_for_path(_tmpdir).get_child('q');
+// Using replace() will try to write the file atomically using a temporary file.
+// So instead, delete and create.
+try {
+    _outputFile.delete(null);
+} catch (e) {
+    // ignore error
+}
+let _stream = _outputFile.create(Gio.FileCreateFlags.REPLACE_DESTINATION, null);
+
+function write() {
+    let string = Array.join(arguments, ' ');
+    let output = string + '\n';
+    _stream.write(output, null);
+}
 
 // Return an array of stack frames (strings as printed by GJS) corresponding to
 // the point where _getCurrentStack() was called
@@ -102,9 +120,9 @@ function _traceDecorator(func, funcName) {
             '(' + Array.map(arguments, _prettyPrint).join(', ') + ')');
         if (depth > 1)
             traceString += ' [' + depth + ']';
-        printerr('Entering', traceString);
+        write('Entering', traceString);
         let retval = func.apply(this, arguments);
-        printerr('Leaving', traceString, '->', _prettyPrint(retval));
+        write('Leaving', traceString, '->', _prettyPrint(retval));
         arguments.callee.recursionDepth--;
         return retval;
     }, {
@@ -126,7 +144,7 @@ function _timeDecorator(func, funcName) {
         let timer = GLib.get_monotonic_time();
         let retval = func.apply(this, arguments);
         let time = GLib.get_monotonic_time() - timer;
-        printerr(funcName, 'executed in', time, 'microseconds');
+        write(funcName, 'executed in', time, 'microseconds');
         return retval;
     }, {
         tag: 'time',
@@ -141,7 +159,7 @@ function _breakBeforeDecorator(func) {
         return func;
 
     return _makeDecorator(func, function () {
-        printerr('Breakpoint', arguments.callee.breakpointNum, 'reached');
+        write('Breakpoint', arguments.callee.breakpointNum, 'reached');
         System.breakpoint();
         return func.apply(this, arguments);
     }, {
@@ -242,7 +260,7 @@ function q(value) {
     if (!DEBUG)
         return value;
     let [func, file, line] = _interpretStackFrame(_getCurrentStack()[1]);
-    printerr(file + ':' + line + ': ' + _prettyPrint(value));
+    write(file + ':' + line + ': ' + _prettyPrint(value));
     return value;
 }
 
