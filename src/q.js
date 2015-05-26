@@ -1,12 +1,16 @@
 const Gio = imports.gi.Gio;
 const GLib = imports.gi.GLib;
+const Format = imports.format;
 const Lang = imports.lang;
 const System = imports.system;
+
+String.prototype.format = Format.format;
 
 let _breakpoints = 0;
 
 let _tmpdir = GLib.getenv('TMPDIR') || GLib.getenv('TEMP') || '/tmp';
 let _outputFile = Gio.File.new_for_path(_tmpdir).get_child('q');
+let _startTime;
 // Using replace() will try to write the file atomically using a temporary file.
 // So instead, delete and create.
 try {
@@ -18,7 +22,9 @@ let _stream = _outputFile.create(Gio.FileCreateFlags.REPLACE_DESTINATION, null);
 
 function write() {
     let string = Array.join(arguments, ' ');
-    let output = string + '\n';
+    let now = GLib.get_monotonic_time();
+    let prefix = '%4.1fs '.format(((now - _startTime) / 1e6) % 100);
+    let output = prefix + string + '\n';
     _stream.write(output, null);
 }
 
@@ -276,3 +282,4 @@ Object.defineProperty(q, 'DEBUG', {
     configurable: true,
 });
 imports.q = q;
+_startTime = GLib.get_monotonic_time();
